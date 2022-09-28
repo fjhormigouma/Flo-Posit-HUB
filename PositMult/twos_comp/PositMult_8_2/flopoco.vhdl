@@ -278,25 +278,25 @@ library std;
 use std.textio.all;
 library work;
 
-entity IntMultiplier_F0_uid12 is
-    port (X : in  std_logic_vector(4 downto 0);
-          Y : in  std_logic_vector(4 downto 0);
-          R : out  std_logic_vector(9 downto 0)   );
+entity IntMultiplier_F0_uid12 is  --!!aumentado el tamaño
+    port (X : in  std_logic_vector(5 downto 0); --+1
+          Y : in  std_logic_vector(5 downto 0); --+1
+          R : out  std_logic_vector(11 downto 0)   ); --+2
 end entity;
 
 architecture arch of IntMultiplier_F0_uid12 is
-signal XX_m13 :  std_logic_vector(4 downto 0);
-signal YY_m13 :  std_logic_vector(4 downto 0);
-signal XX :  signed(-1+5 downto 0);
-signal YY :  signed(-1+5 downto 0);
-signal RR :  signed(-1+10 downto 0);
+--signal XX_m13 :  std_logic_vector(4 downto 0);
+--signal YY_m13 :  std_logic_vector(4 downto 0);
+signal XX :  signed(-1+5+1 downto 0);--+1
+signal YY :  signed(-1+5+1 downto 0);--+1
+signal RR :  signed(-1+10+2 downto 0); --+2
 begin
-   XX_m13 <= X ;
-   YY_m13 <= Y ;
+--   XX_m13 <= X ;  --Esto no se usa
+--   YY_m13 <= Y ;
    XX <= signed(X);
    YY <= signed(Y);
    RR <= XX*YY;
-   R <= std_logic_vector(RR(9 downto 0));
+   R <= std_logic_vector(RR(9+2 downto 0)); --+2
 end architecture;
 
 --------------------------------------------------------------------------------
@@ -320,36 +320,38 @@ library std;
 use std.textio.all;
 library work;
 
-entity RightShifterSticky7_by_max_7_F0_uid17 is
-    port (X : in  std_logic_vector(6 downto 0);
+--!! Eliminado todo lo referente al sticky por que no hace falta en multiplicacion
+
+entity RightShifterSticky7_by_max_7_F0_uid17 is -- !!Reducido el tamaño porque no hace falta guard bit
+    port (X : in  std_logic_vector(6-1 downto 0);
           S : in  std_logic_vector(2 downto 0);
           padBit : in  std_logic;
-          R : out  std_logic_vector(6 downto 0);
-          Sticky : out  std_logic   );
+          R : out  std_logic_vector(6-1 downto 0));
+    --      Sticky : out  std_logic   );
 end entity;
 
 architecture arch of RightShifterSticky7_by_max_7_F0_uid17 is
 signal ps :  std_logic_vector(2 downto 0);
-signal Xpadded :  std_logic_vector(6 downto 0);
-signal level3 :  std_logic_vector(6 downto 0);
-signal stk2 :  std_logic;
-signal level2 :  std_logic_vector(6 downto 0);
-signal stk1 :  std_logic;
-signal level1 :  std_logic_vector(6 downto 0);
-signal stk0 :  std_logic;
-signal level0 :  std_logic_vector(6 downto 0);
+signal Xpadded :  std_logic_vector(5 downto 0);
+signal level3 :  std_logic_vector(5 downto 0);
+--signal stk2 :  std_logic;
+signal level2 :  std_logic_vector(5 downto 0);
+--signal stk1 :  std_logic;
+signal level1 :  std_logic_vector(5 downto 0);
+--signal stk0 :  std_logic;
+signal level0 :  std_logic_vector(5 downto 0);
 begin
    ps<= S;
    Xpadded <= X;
    level3<= Xpadded;
-   stk2 <= '1' when (level3(3 downto 0)/="0000" and ps(2)='1')   else '0';
-   level2 <=  level3 when  ps(2)='0'    else (3 downto 0 => padBit) & level3(6 downto 4);
-   stk1 <= '1' when (level2(1 downto 0)/="00" and ps(1)='1') or stk2 ='1'   else '0';
-   level1 <=  level2 when  ps(1)='0'    else (1 downto 0 => padBit) & level2(6 downto 2);
-   stk0 <= '1' when (level1(0 downto 0)/="0" and ps(0)='1') or stk1 ='1'   else '0';
-   level0 <=  level1 when  ps(0)='0'    else (0 downto 0 => padBit) & level1(6 downto 1);
+ --  stk2 <= '1' when (level3(3 downto 0)/="0000" and ps(2)='1')   else '0';
+   level2 <=  level3 when  ps(2)='0'    else (3 downto 0 => padBit) & level3(5 downto 4);
+ -- stk1 <= '1' when (level2(1 downto 0)/="00" and ps(1)='1') or stk2 ='1'   else '0';
+   level1 <=  level2 when  ps(1)='0'    else (1 downto 0 => padBit) & level2(5 downto 2);
+ --stk0 <= '1' when (level1(0 downto 0)/="0" and ps(0)='1') or stk1 ='1'   else '0';
+   level0 <=  level1 when  ps(0)='0'    else (0 downto 0 => padBit) & level1(5 downto 1);
    R <= level0;
-   Sticky <= stk0;
+--  Sticky <= stk0;
 end architecture;
 
 --------------------------------------------------------------------------------
@@ -373,23 +375,23 @@ library std;
 use std.textio.all;
 library work;
 
-entity PositFastEncoder_8_2_F0_uid15 is
+entity PositFastEncoder_8_2_F0_uid15 is  
     port (Sign : in  std_logic;
           SF : in  std_logic_vector(6 downto 0);
           Frac : in  std_logic_vector(2 downto 0);
-          Guard : in  std_logic;
-          Sticky : in  std_logic;
+         -- Guard : in  std_logic;
+         -- Sticky : in  std_logic;
           NZN : in  std_logic;
           R : out  std_logic_vector(7 downto 0)   );
 end entity;
 
 architecture arch of PositFastEncoder_8_2_F0_uid15 is
    component RightShifterSticky7_by_max_7_F0_uid17 is
-      port ( X : in  std_logic_vector(6 downto 0);
+      port ( X : in  std_logic_vector(6-1 downto 0);  --porque falta guard bit
              S : in  std_logic_vector(2 downto 0);
              padBit : in  std_logic;
-             R : out  std_logic_vector(6 downto 0);
-             Sticky : out  std_logic   );
+             R : out  std_logic_vector(6-1 downto 0));
+             --Sticky : out  std_logic   );
    end component;
 
 signal rc :  std_logic;
@@ -401,8 +403,8 @@ signal ovf :  std_logic;
 signal regValue :  std_logic_vector(2 downto 0);
 signal regNeg :  std_logic;
 signal padBit :  std_logic;
-signal inputShifter :  std_logic_vector(6 downto 0);
-signal shiftedPosit :  std_logic_vector(6 downto 0);
+signal inputShifter :  std_logic_vector(6-1 downto 0); -- -1 porque he quitado el guard bit
+signal shiftedPosit :  std_logic_vector(6-1 downto 0); -- -1 porque he quitado el guard bit
 signal stkBit :  std_logic;
 signal unroundedPosit :  std_logic_vector(6 downto 0);
 signal lsb :  std_logic;
@@ -425,20 +427,21 @@ begin
 -------------- Generate regime - shift out exponent and fraction --------------
    regNeg <= Sign XOR rc;
    padBit <= NOT(regNeg);
-   inputShifter <= regNeg & exp & Frac & Guard;
+   inputShifter <= regNeg & exp & Frac;  -- eliminado el guardbit
    RegimeGenerator: RightShifterSticky7_by_max_7_F0_uid17
       port map ( S => regValue,
                  X => inputShifter,
                  padBit => padBit,
-                 R => shiftedPosit,
-                 Sticky => stkBit);
-   unroundedPosit <= padBit & shiftedPosit(6 downto 1);
+                 R => shiftedPosit);
+                 --Sticky => stkBit);
+   roundedPosit <= padBit & shiftedPosit;  --!! vble destino cambiada y eliminado el guard del shited
 ---------------------------- Round to nearest even ----------------------------
-   lsb <= shiftedPosit(1);
-   rnd <= shiftedPosit(0);
-   stk <= stkBit OR Sticky;
-   round <= rnd AND (lsb OR stk OR ovf);
-   roundedPosit <= unroundedPosit + round;
+--!!Todo el redondeo y sticky se puede eliminar por que no puede haber punto medio en multiplicacion
+--   lsb <= shiftedPosit(1);
+--   rnd <= shiftedPosit(0);
+--  stk <= stkBit OR Sticky;
+--  round <= rnd AND (lsb OR stk OR ovf);   !! el ovf esta aqui  para un cornercase del underflow
+ --  roundedPosit <= unroundedPosit + round;
 -------------------------- Check sign & Special Cases --------------------------
    unsignedPosit <= roundedPosit when NZN = '1' else (others => '0');
    R <= Sign & unsignedPosit;
@@ -489,17 +492,17 @@ architecture arch of PositMult is
    end component;
 
    component IntMultiplier_F0_uid12 is
-      port ( X : in  std_logic_vector(4 downto 0);
-             Y : in  std_logic_vector(4 downto 0);
-             R : out  std_logic_vector(9 downto 0)   );
+      port ( X : in  std_logic_vector(5 downto 0); -- +1
+             Y : in  std_logic_vector(5 downto 0); -- +1
+             R : out  std_logic_vector(11 downto 0)   );-- +2
    end component;
 
    component PositFastEncoder_8_2_F0_uid15 is
       port ( Sign : in  std_logic;
              SF : in  std_logic_vector(6 downto 0);
              Frac : in  std_logic_vector(2 downto 0);
-             Guard : in  std_logic;
-             Sticky : in  std_logic;
+             --Guard : in  std_logic;
+             --Sticky : in  std_logic;
              NZN : in  std_logic;
              R : out  std_logic_vector(7 downto 0)   );
    end component;
@@ -515,9 +518,9 @@ signal Y_nzn :  std_logic;
 signal XY_nzn :  std_logic;
 signal X_nar :  std_logic;
 signal Y_nar :  std_logic;
-signal XX_f :  std_logic_vector(4 downto 0);
-signal YY_f :  std_logic_vector(4 downto 0);
-signal XY_f :  std_logic_vector(9 downto 0);
+signal XX_f :  std_logic_vector(5 downto 0);
+signal YY_f :  std_logic_vector(5 downto 0);
+signal XY_f :  std_logic_vector(11 downto 0);
 signal XY_sgn :  std_logic;
 signal XY_ovfExtra :  std_logic;
 signal XY_ovf :  std_logic;
@@ -526,8 +529,8 @@ signal XY_ovfBits :  std_logic_vector(1 downto 0);
 signal XY_sf :  std_logic_vector(6 downto 0);
 signal XY_finalSgn :  std_logic;
 signal XY_frac :  std_logic_vector(2 downto 0);
-signal grd :  std_logic;
-signal stk :  std_logic;
+--signal grd :  std_logic;
+--signal stk :  std_logic;
 begin
 --------------------------- Start of vhdl generation ---------------------------
 ---------------------------- Decode X & Y operands ----------------------------
@@ -549,31 +552,31 @@ begin
    X_nar <= X_sgn AND NOT(X_nzn);
    Y_nar <= Y_sgn AND NOT(Y_nzn);
    -- Multiply the fractions (using FloPoCo IntMultiplier)
-   XX_f <= X_sgn & NOT(X_sgn) & X_f;
-   YY_f <= Y_sgn & NOT(Y_sgn) & Y_f;
-   FracMultiplier: IntMultiplier_F0_uid12
+   XX_f <= X_sgn & NOT(X_sgn) & X_f & '1';  --!! com ilsb  aumentado size XX_F
+   YY_f <= Y_sgn & NOT(Y_sgn) & Y_f & '1';   --!! con ilsb, aumentado size YY_F
+   FracMultiplier: IntMultiplier_F0_uid12  --!!aumentado tamaño multiplicador
       port map ( X => XX_f,
                  Y => YY_f,
                  R => XY_f);
-   XY_sgn <= XY_f(9);
-   XY_ovfExtra <= NOT(XY_sgn) AND XY_f(8);
-   XY_ovf <=  (XY_sgn XOR XY_f(7));
-   XY_normF <= XY_f(6 downto 0) when (XY_ovfExtra OR XY_ovf) = '1' else (XY_f(5 downto 0) & '0');
+   XY_sgn <= XY_f(11);  --!! 9+2
+   XY_ovfExtra <= NOT(XY_sgn) AND XY_f(10); --!!8+2
+   XY_ovf <=  (XY_sgn XOR XY_f(9));   --!!7+2
+   XY_normF <= XY_f(8 downto 2) when (XY_ovfExtra OR XY_ovf) = '1' else (XY_f(7 downto 1)); --!!  normalización rehecha +2, ampliacion rango en el else
    -- Add the exponent values
    XY_ovfBits <= XY_ovfExtra & XY_ovf;
    XY_sf <= std_logic_vector(unsigned(X_sf(X_sf'high) & X_sf) + unsigned(Y_sf(Y_sf'high) & Y_sf) + unsigned(XY_ovfBits));
 ----------------------------- Generate final posit -----------------------------
    XY_finalSgn <= XY_sgn when XY_nzn = '1' else (X_nar OR Y_nar);
    XY_frac <= XY_normF(6 downto 4);
-   grd <= XY_normF(3);
-   stk <= '0' when (XY_normF(2 downto 0) = "000") else '1';
-   PositEncoder: PositFastEncoder_8_2_F0_uid15
+   --grd <= XY_normF(3);      --!! al quitar hay que cambiar el right shifter
+   --stk <= '0' when (XY_normF(2 downto 0) = "000") else '1';
+   PositEncoder: PositFastEncoder_8_2_F0_uid15 
       port map ( Frac => XY_frac,
-                 Guard => grd,
+                 --Guard => grd,
                  NZN => XY_nzn,
                  SF => XY_sf,
                  Sign => XY_finalSgn,
-                 Sticky => stk,
+                -- Sticky => stk,
                  R => R);
 ---------------------------- End of vhdl generation ----------------------------
 end architecture;
