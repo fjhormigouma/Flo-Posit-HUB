@@ -19,7 +19,7 @@ library std;
 use std.textio.all;
 library work;
 
-entity Normalizer_ZO_6_6_6_F0_uid6 is
+entity Normalizer_ZO_6_6_6_F0_uid6 is   --!!no cambiado usar el otro
     port (X : in  std_logic_vector(5 downto 0);
           OZb : in  std_logic;
           Count : out  std_logic_vector(2 downto 0);
@@ -74,7 +74,7 @@ library std;
 use std.textio.all;
 library work;
 
-entity PositFastDecoder_8_2_F0_uid4 is
+entity PositFastDecoder_8_2_F0_uid4 is      --!!no cambiado usar el otro
     port (X : in  std_logic_vector(7 downto 0);
           Sign : out  std_logic;
           SF : out  std_logic_vector(5 downto 0);
@@ -149,7 +149,7 @@ library std;
 use std.textio.all;
 library work;
 
-entity Normalizer_ZO_6_6_6_F0_uid10 is
+entity Normalizer_ZO_6_6_6_F0_uid10 is   --!! cambiado para HUB
     port (X : in  std_logic_vector(5 downto 0);
           OZb : in  std_logic;
           Count : out  std_logic_vector(2 downto 0);
@@ -157,30 +157,30 @@ entity Normalizer_ZO_6_6_6_F0_uid10 is
 end entity;
 
 architecture arch of Normalizer_ZO_6_6_6_F0_uid10 is
-signal level3 :  std_logic_vector(5 downto 0);
+signal level3 :  std_logic_vector(6 downto 0);
 signal sozb :  std_logic;
 signal count2 :  std_logic;
-signal level2 :  std_logic_vector(5 downto 0);
+signal level2 :  std_logic_vector(6 downto 0);
 signal count1 :  std_logic;
-signal level1 :  std_logic_vector(5 downto 0);
+signal level1 :  std_logic_vector(6 downto 0);
 signal count0 :  std_logic;
-signal level0 :  std_logic_vector(5 downto 0);
+signal level0 :  std_logic_vector(6 downto 0);
 signal sCount :  std_logic_vector(2 downto 0);
 begin
-   level3 <= X ;
+   level3 <= X & '1' ;  --!! introduzco el ilsb . Se podria poner y desplazar aparte y luego poner una or. Eso solucionaría le caso todo 1 pero creo que es menos eficiente
    sozb<= OZb;
-   count2<= '1' when level3(5 downto 2) = (5 downto 2=>sozb) else '0';
-   level2<= level3(5 downto 0) when count2='0' else level3(1 downto 0) & (3 downto 0 => '0');
+   count2<= '1' when level3(6 downto 3) = (6 downto 3=>sozb) else '0';
+   level2<= level3(6 downto 0) when count2='0' else level3(2 downto 0) & (3 downto 0 => '0');
 
-   count1<= '1' when level2(5 downto 4) = (5 downto 4=>sozb) else '0';
-   level1<= level2(5 downto 0) when count1='0' else level2(3 downto 0) & (1 downto 0 => '0');
+   count1<= '1' when level2(6 downto 4) = (6 downto 4=>sozb) else '0';
+   level1<= level2(6 downto 0) when count1='0' else level2(4 downto 0) & (1 downto 0 => '0');
 
-   count0<= '1' when level1(5 downto 5) = (5 downto 5=>sozb) else '0';
-   level0<= level1(5 downto 0) when count0='0' else level1(4 downto 0) & (0 downto 0 => '0');
+   count0<= '1' when level1(6 downto 6) = (6 downto 6=>sozb) else '0';
+   level0<= level1(6 downto 0) when count0='0' else level1(5 downto 0) & (0 downto 0 => '0');
 
-   R <= level0;
+   R <= level0(5 downto 0);  --!! incluye el ilsb pero no el MSB que se desprecia despues
    sCount <= count2 & count1 & count0;
-   Count <= sCount;
+   Count <= "110" when sCount =  "111" else sCount;   --Cuando es todo 1 cuenta tambien el ilsb. Hay varias formas de solucionarlos. Esto es para hacerlo mas general y medio eficiente. Se podría detectar tambien el caso "todo 1" a la entrada. No se que será mas eficiente.
 end architecture;
 
 --------------------------------------------------------------------------------
@@ -208,7 +208,7 @@ entity PositFastDecoder_8_2_F0_uid8 is
     port (X : in  std_logic_vector(7 downto 0);
           Sign : out  std_logic;
           SF : out  std_logic_vector(5 downto 0);
-          Frac : out  std_logic_vector(2 downto 0);
+          Frac : out  std_logic_vector(2+1 downto 0); --ajustado indice
           NZN : out  std_logic   );
 end entity;
 
@@ -230,7 +230,7 @@ signal k :  std_logic_vector(3 downto 0);
 signal sgnVect :  std_logic_vector(1 downto 0);
 signal exp :  std_logic_vector(1 downto 0);
 signal pSF :  std_logic_vector(5 downto 0);
-signal pFrac :  std_logic_vector(2 downto 0);
+signal pFrac :  std_logic_vector(2+1 downto 0); --ajustado indice
 begin
 --------------------------- Start of vhdl generation ---------------------------
 --------------------------- Sign bit & special cases ---------------------------
@@ -247,10 +247,10 @@ begin
 ----------------- Determine the scaling factor - regime & exp -----------------
    k <= "0" & regLength when rc /= sgn else "1" & NOT(regLength);
    sgnVect <= (others => sgn);
-   exp <= shiftedPosit(4 downto 3) XOR sgnVect;
+   exp <= shiftedPosit(5 downto 4) XOR sgnVect; --ajustado indice, por que el msb estaba ya quitada
    pSF <= k & exp;
 ------------------------------- Extract fraction -------------------------------
-   pFrac <= shiftedPosit(2 downto 0);
+   pFrac <= shiftedPosit(3 downto 0);  --!! incluye ilsb
    Sign <= sgn;
    SF <= pSF;
    Frac <= pFrac;
@@ -434,13 +434,13 @@ begin
                  padBit => padBit,
                  R => shiftedPosit);
                  --Sticky => stkBit);
-   roundedPosit <= padBit & shiftedPosit;  --!! vble destino cambiada y eliminado el guard del shited
+   roundedPosit <= padBit & shiftedPosit (5 downto 1) & (shiftedPosit(0) OR ovf);  --!! vble destino cambiada y eliminado el guard del shited.El lsb tien que ser 1 si ovf para el minimo positivo y el máximo negativo
 ---------------------------- Round to nearest even ----------------------------
---!!Todo el redondeo y sticky se puede eliminar por que no puede haber punto medio en multiplicacion
+--!!Todo el redondeo y sticky se puede eliminado aunque podria ser biased, estudiarsi haria falta sticky para unbiased
 --   lsb <= shiftedPosit(1);
 --   rnd <= shiftedPosit(0);
 --  stk <= stkBit OR Sticky;
---  round <= rnd AND (lsb OR stk OR ovf);   !! el ovf esta aqui  para un cornercase del underflow
+--  round <= rnd AND (lsb OR stk OR ovf);   !! el ovf esta aqui  para un el minimo positivo y el máximo negativo
  --  roundedPosit <= unroundedPosit + round;
 -------------------------- Check sign & Special Cases --------------------------
    unsignedPosit <= roundedPosit when NZN = '1' else (others => '0');
@@ -484,10 +484,10 @@ architecture arch of PositMult is
    end component;
 
    component PositFastDecoder_8_2_F0_uid8 is
-      port ( X : in  std_logic_vector(7 downto 0);
+      port ( X : in  std_logic_vector(7 downto 0); 
              Sign : out  std_logic;
              SF : out  std_logic_vector(5 downto 0);
-             Frac : out  std_logic_vector(2 downto 0);
+             Frac : out  std_logic_vector(2+1 downto 0);--ajustado
              NZN : out  std_logic   );
    end component;
 
@@ -509,18 +509,18 @@ architecture arch of PositMult is
 
 signal X_sgn :  std_logic;
 signal X_sf :  std_logic_vector(5 downto 0);
-signal X_f :  std_logic_vector(2 downto 0);
+signal X_f :  std_logic_vector(2+1 downto 0);   -- +1
 signal X_nzn :  std_logic;
 signal Y_sgn :  std_logic;
 signal Y_sf :  std_logic_vector(5 downto 0);
-signal Y_f :  std_logic_vector(2 downto 0);
+signal Y_f :  std_logic_vector(2+1 downto 0);   -- +1
 signal Y_nzn :  std_logic;
 signal XY_nzn :  std_logic;
 signal X_nar :  std_logic;
 signal Y_nar :  std_logic;
-signal XX_f :  std_logic_vector(5 downto 0);
-signal YY_f :  std_logic_vector(5 downto 0);
-signal XY_f :  std_logic_vector(11 downto 0);
+signal XX_f :  std_logic_vector(5 downto 0); -- +1
+signal YY_f :  std_logic_vector(5 downto 0);-- +1
+signal XY_f :  std_logic_vector(11 downto 0);-- +2
 signal XY_sgn :  std_logic;
 signal XY_ovfExtra :  std_logic;
 signal XY_ovf :  std_logic;
@@ -534,7 +534,7 @@ signal XY_frac :  std_logic_vector(2 downto 0);
 begin
 --------------------------- Start of vhdl generation ---------------------------
 ---------------------------- Decode X & Y operands ----------------------------
-   X_decoder: PositFastDecoder_8_2_F0_uid4
+   X_decoder: PositFastDecoder_8_2_F0_uid8   --!! unidad HUB
       port map ( X => X,
                  Frac => X_f,
                  NZN => X_nzn,
@@ -551,9 +551,9 @@ begin
    XY_nzn <= X_nzn AND Y_nzn;
    X_nar <= X_sgn AND NOT(X_nzn);
    Y_nar <= Y_sgn AND NOT(Y_nzn);
-   -- Multiply the fractions (using FloPoCo IntMultiplier)
-   XX_f <= X_sgn & NOT(X_sgn) & X_f & '1';  --!! com ilsb  aumentado size XX_F
-   YY_f <= Y_sgn & NOT(Y_sgn) & Y_f & '1';   --!! con ilsb, aumentado size YY_F
+  -- Multiply the fractions (using FloPoCo IntMultiplier)
+   XX_f <= X_sgn & NOT(X_sgn) & X_f;
+   YY_f <= Y_sgn & NOT(Y_sgn) & Y_f;
    FracMultiplier: IntMultiplier_F0_uid12  --!!aumentado tamaño multiplicador
       port map ( X => XX_f,
                  Y => YY_f,
@@ -561,7 +561,7 @@ begin
    XY_sgn <= XY_f(11);  --!! 9+2
    XY_ovfExtra <= NOT(XY_sgn) AND XY_f(10); --!!8+2
    XY_ovf <=  (XY_sgn XOR XY_f(9));   --!!7+2
-   XY_normF <= XY_f(8 downto 2) when (XY_ovfExtra OR XY_ovf) = '1' else (XY_f(7 downto 1)); --!!  normalización rehecha +2, ampliacion rango en el else
+   XY_normF <= XY_f(8 downto 2) when (XY_ovfExtra OR XY_ovf) = '1' else (XY_f(7 downto 1)); --!!  normalización rehecha +2 para ajustar los indices, ampliacion rango en el else
    -- Add the exponent values
    XY_ovfBits <= XY_ovfExtra & XY_ovf;
    XY_sf <= std_logic_vector(unsigned(X_sf(X_sf'high) & X_sf) + unsigned(Y_sf(Y_sf'high) & Y_sf) + unsigned(XY_ovfBits));
@@ -572,6 +572,7 @@ begin
    --stk <= '0' when (XY_normF(2 downto 0) = "000") else '1';
    PositEncoder: PositFastEncoder_8_2_F0_uid15 
       port map ( Frac => XY_frac,
+	  
                  --Guard => grd,
                  NZN => XY_nzn,
                  SF => XY_sf,
