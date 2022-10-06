@@ -157,14 +157,14 @@ entity Normalizer_ZO_6_6_6_F0_uid10 is   --!! cambiado para HUB
 end entity;
 
 architecture arch of Normalizer_ZO_6_6_6_F0_uid10 is
-signal level3 :  std_logic_vector(6 downto 0);
+signal level3 :  std_logic_vector(6 downto 0);--ajustado tamaño
 signal sozb :  std_logic;
 signal count2 :  std_logic;
-signal level2 :  std_logic_vector(6 downto 0);
+signal level2 :  std_logic_vector(6 downto 0);--ajustado tamaño
 signal count1 :  std_logic;
-signal level1 :  std_logic_vector(6 downto 0);
+signal level1 :  std_logic_vector(6 downto 0);--ajustado tamaño
 signal count0 :  std_logic;
-signal level0 :  std_logic_vector(6 downto 0);
+signal level0 :  std_logic_vector(6 downto 0);--ajustado tamaño
 signal sCount :  std_logic_vector(2 downto 0);
 begin
    level3 <= X & '1' ;  --!! introduzco el ilsb . Se podria poner y desplazar aparte y luego poner una or. Eso solucionaría le caso todo 1 pero creo que es menos eficiente
@@ -247,7 +247,7 @@ begin
 ----------------- Determine the scaling factor - regime & exp -----------------
    k <= "0" & regLength when rc /= sgn else "1" & NOT(regLength);
    sgnVect <= (others => sgn);
-   exp <= shiftedPosit(5 downto 4) XOR sgnVect; --ajustado indice, por que el msb estaba ya quitada
+   exp <= shiftedPosit(5 downto 4) XOR sgnVect; --ajustado indice, porque el msb estaba ya quitada
    pSF <= k & exp;
 ------------------------------- Extract fraction -------------------------------
    pFrac <= shiftedPosit(3 downto 0);  --!! incluye ilsb
@@ -332,14 +332,14 @@ end entity;
 
 architecture arch of RightShifterSticky7_by_max_7_F0_uid17 is
 signal ps :  std_logic_vector(2 downto 0);
-signal Xpadded :  std_logic_vector(5 downto 0);
-signal level3 :  std_logic_vector(5 downto 0);
+signal Xpadded :  std_logic_vector(5 downto 0); -- -1
+signal level3 :  std_logic_vector(5 downto 0);-- -1
 --signal stk2 :  std_logic;
-signal level2 :  std_logic_vector(5 downto 0);
+signal level2 :  std_logic_vector(5 downto 0);-- -1
 --signal stk1 :  std_logic;
-signal level1 :  std_logic_vector(5 downto 0);
+signal level1 :  std_logic_vector(5 downto 0);-- -1
 --signal stk0 :  std_logic;
-signal level0 :  std_logic_vector(5 downto 0);
+signal level0 :  std_logic_vector(5 downto 0);-- -1
 begin
    ps<= S;
    Xpadded <= X;
