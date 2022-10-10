@@ -670,7 +670,7 @@ begin
    frac_offset <= CONV_STD_LOGIC_VECTOR(7,3) when shift_saturate = '1' else offset(2 downto 0);
    -- Align fractions - right shift the smaller one
    input_shifter <= smaller_frac; --& "00";   --los dos bits adicionales no hacen falta poruqe no se redondea
-   pad_bit <= smaller_frac(smaller_frac'high);
+   pad_bit <= smaller_frac(smaller_frac'high) AND (NOT shift_saturate);    --Sin esta modificación, mantisas fuera de rango  restan 1 ulp del valor mas grande y pueden modificar el exponente en casos que no debería
    RightShifterFraction: RightShifterSticky7_by_max_7_F0_uid18
       port map ( S => frac_offset,
                  X => input_shifter,
